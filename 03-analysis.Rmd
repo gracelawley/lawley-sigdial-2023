@@ -1,0 +1,373 @@
+---
+title: "20Newsgroup Analysis"
+author: "Grace Lawley"
+output: 
+  html_document:
+    theme: 'flatly'
+    toc: true
+    toc_depth: 2
+    toc_float: true
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(stringr)
+library(heplots) # boxM()
+library(effectsize) # eta_squared()
+set.seed(1234)
+
+
+lda20_gamma_ilr <- readRDS("data/lda20_gamma_ilr.RDS")
+lda20_gamma_ilr <- readRDS("data/lda20_gamma_ilr.RDS")
+```
+
+LDA model was fit using $k=20$ on documents from 4 labels: 
+
+1. `comp.sys.ibm.pc.hardware`
+1. `comp.sys.mac.hardware`
+1. `rec.sport.baseball`
+1. `rec.sport.hockey`
+
+
+```{r}
+lda20_gamma_ilr %>% 
+  count(label)
+```
+
+
+# Between broader categories (x1)
+
+## (1) `comp.sys.*` vs. `rec.sport.*`
+
+> Compare topic distributions between documents from `comp.sys.[ibm.pc|mac].hardware` vs. documents from `rec.sport.[baseball|hockey]`.
+
+
+```{r}
+# prepare dataframe
+comp_v_rec <- lda20_gamma_ilr %>% 
+  mutate(label = str_extract(label, "[a-z]+"))
+
+comp_v_rec %>% 
+  count(label)
+```
+
+
+```{r}
+# reshape dataframe into matrices
+comp_v_rec_X <- comp_v_rec %>%
+  select(-label) %>% 
+  as.matrix()
+comp_v_rec_Y <- comp_v_rec$label
+```
+
+
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(comp_v_rec_X, comp_v_rec_Y)
+```
+
+### MANOVA
+
+```{r}
+comp_v_rec_manova <- manova(comp_v_rec_X ~ comp_v_rec_Y, data = comp_v_rec)
+summary(comp_v_rec_manova)
+```
+
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(comp_v_rec_manova)
+```
+
+
+
+# Between subcategories (x2)
+
+## (1) `comp.sys.ibm.pc.hardware` vs. `comp.sys.mac.hardware`
+
+> Compare topic distributions between documents from `comp.sys.ibm.pc.hardware` vs. documents from `comp.sys.mac.hardware`.
+
+
+
+```{r}
+# prepare data
+mac_v_pc <- lda20_gamma_ilr %>%
+  filter(str_detect(label, "comp.sys"))
+
+mac_v_pc %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+mac_v_pc_X <- mac_v_pc %>%
+  select(-label) %>% 
+  as.matrix() 
+mac_v_pc_Y <- mac_v_pc$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(mac_v_pc_X, mac_v_pc_Y)
+```
+
+### MANOVA
+
+```{r}
+mac_v_pc_manova <- manova(mac_v_pc_X ~ mac_v_pc_Y, data = mac_v_pc)
+summary(mac_v_pc_manova)
+```
+
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(mac_v_pc_manova)
+```
+
+
+## (2) `rec.sport.baseball` vs. `rec.sport.hockey`
+
+> Compare topic distributions between documents from `rec.sport.baseball` and documents from `rec.sport.hockey`.
+
+```{r}
+# prepare data
+baseball_v_hockey <- lda20_gamma_ilr %>%
+  filter(str_detect(label, "rec.sport"))
+
+baseball_v_hockey %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+baseball_v_hockey_X <- baseball_v_hockey %>%
+  select(-label) %>% 
+  as.matrix() 
+baseball_v_hockey_Y <- baseball_v_hockey$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(baseball_v_hockey_X, baseball_v_hockey_Y)
+```
+
+### MANOVA
+
+```{r}
+baseball_v_hockey_manova <- manova(baseball_v_hockey_X ~ baseball_v_hockey_Y, data = baseball_v_hockey)
+summary(baseball_v_hockey_manova)
+```
+
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(baseball_v_hockey_manova)
+```
+
+
+# Within a single topic (x4)
+
+## (1) Within `comp.sys.ibm.pc.hardware`
+
+> Randomly split documents from `comp.sys.ibm.pc.hardware` into two groups. Compare topic distributions between documents from `comp.sys.ibm.pc.hardware_1` and documents from `comp.sys.ibm.pc.hardware_2`.
+
+```{r}
+# prepare data
+pc_v_pc <- lda20_gamma_ilr %>% 
+  filter(str_detect(label, "comp.sys.ibm.pc.hardware")) %>%
+  # randomly split into 2 groups
+  mutate(x = sample(c(1, 2), nrow(.), replace = TRUE)) %>% 
+  mutate(label = paste0(label, "_", x)) %>% 
+  select(-x) %>% 
+  mutate(label = as.factor(label))
+
+pc_v_pc %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+pc_v_pc_X <- pc_v_pc %>%
+  select(-label) %>% 
+  as.matrix()
+pc_v_pc_Y <- pc_v_pc$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(pc_v_pc_X, pc_v_pc_Y)
+```
+
+### MANOVA
+
+```{r}
+pc_v_pc_manova <- manova(pc_v_pc_X ~ pc_v_pc_Y, data = pc_v_pc)
+summary(pc_v_pc_manova)
+```
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(pc_v_pc_manova)
+```
+
+## (2) Within `comp.sys.mac.hardware`
+
+> Randomly split documents from `comp.sys.mac.hardware` into two groups. Compare topic distributions between documents from `comp.sys.mac.hardware_1` and documents from `comp.sys.mac.hardware_2`.
+
+
+```{r}
+# prepare data
+mac_v_mac <- lda20_gamma_ilr %>% 
+  filter(str_detect(label, "comp.sys.mac.hardware")) %>%
+  # randomly split into 2 groups
+  mutate(x = sample(c(1, 2), nrow(.), replace = TRUE)) %>% 
+  mutate(label = paste0(label, "_", x)) %>% 
+  select(-x) %>% 
+  mutate(label = as.factor(label))
+
+mac_v_mac %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+mac_v_mac_X <- mac_v_mac %>%
+  select(-label) %>% 
+  as.matrix()
+mac_v_mac_Y <- mac_v_mac$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(mac_v_mac_X, mac_v_mac_Y)
+```
+
+### MANOVA
+
+```{r}
+mac_v_mac_manova <- manova(mac_v_mac_X ~ mac_v_mac_Y, data = mac_v_mac)
+summary(mac_v_mac_manova)
+```
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(mac_v_mac_manova)
+```
+
+
+## (3) Within `rec.sport.baseball`
+
+> Randomly split documents from `rec.sport.baseball` into two groups.  Compare topic distributions between documents from `rec.sport.baseball_1` and documents from `rec.sport.baseball_2`.
+
+```{r}
+# prepare data
+baseball_v_baseball <- lda20_gamma_ilr %>% 
+  filter(str_detect(label, "rec.sport.baseball")) %>%
+  # randomly split into 2 groups
+  mutate(x = sample(c(1, 2), nrow(.), replace = TRUE)) %>% 
+  mutate(label = paste0(label, "_", x)) %>% 
+  select(-x)
+
+baseball_v_baseball %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+baseball_v_baseball_X <- baseball_v_baseball %>%
+  select(-label) %>% 
+  as.matrix()
+baseball_v_baseball_Y <- baseball_v_baseball$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(baseball_v_baseball_X, baseball_v_baseball_Y)
+```
+
+### MANOVA
+
+```{r}
+baseball_v_baseball_manova <- manova(baseball_v_baseball_X ~ baseball_v_baseball_Y, data = baseball_v_baseball)
+summary(baseball_v_baseball_manova)
+```
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(baseball_v_baseball_manova)
+```
+
+## (4) Within `rec.sport.hockey`
+
+> Randomly split documents from `rec.sport.hockey` into two groups. Compare topic distributions between documents from `rec.sport.hockey_1` and documents from `rec.sport.hockey_2`.
+
+```{r}
+# prepare data
+hockey_v_hockey <- lda20_gamma_ilr %>% 
+  filter(str_detect(label, "rec.sport.hockey")) %>%
+  # randomly split into 2 groups
+  mutate(x = sample(c(1, 2), nrow(.), replace = TRUE)) %>% 
+  mutate(label = paste0(label, "_", x)) %>% 
+  select(-x) %>% 
+  mutate(label = as.factor(label))
+
+hockey_v_hockey %>% 
+  count(label)
+```
+
+```{r}
+# reshape dataframe into matrices
+hockey_v_hockey_X <- hockey_v_hockey %>%
+  select(-label) %>% 
+  as.matrix()
+hockey_v_hockey_Y <- hockey_v_hockey$label
+```
+
+### Box’s M Test for homogeneity of covariance matrices
+
+If $p < 0.001$, this MANOVA assumption not met (but okay to proceed)
+
+```{r}
+boxM(hockey_v_hockey_X, hockey_v_hockey_Y)
+```
+
+### MANOVA
+
+```{r}
+hockey_v_hockey_manova <- manova(hockey_v_hockey_X ~ hockey_v_hockey_Y, data = hockey_v_hockey)
+summary(hockey_v_hockey_manova)
+```
+
+### Partial eta-squared (effect size)
+
+```{r}
+eta_squared(hockey_v_hockey_manova)
+```
+

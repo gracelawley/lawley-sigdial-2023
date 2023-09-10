@@ -12,7 +12,6 @@ This repository contains the code used for the *20Newsgroup* analysis in [A Stat
 - `01-prep-model-input.R` -- select subset and preprocess text
 - `02-fit-LDA-model.R` -- fit LDA model with $k=20$ and save output
 - `03-analysis.Rmd` -- source code for the analysis
-- `03-analysis.html` -- rendered analysis 
 
 # Citation
 
