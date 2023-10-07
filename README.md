@@ -1,6 +1,6 @@
 # Lawley et al. (2023)
 
-This repository contains the code used for the *20Newsgroup* analysis in [A Statistical Approach for Quantifying Group Difference in Topic Distributions Using Clinical Discourse Samples]() (Lawley et al., SIGDIAL 2023). 
+This repository contains the code used for the *20Newsgroup* analysis in [A Statistical Approach for Quantifying Group Difference in Topic Distributions Using Clinical Discourse Samples](https://aclanthology.org/2023.sigdial-1.5) (Lawley et al., SIGDIAL 2023). 
 
 # Abstract
 
@@ -15,16 +15,18 @@ This repository contains the code used for the *20Newsgroup* analysis in [A Stat
 
 # Citation
 
-To cite this paper, please use the following BiBTex entry (will be updated once conference papers are uploaded to the ACL anthology):
+To cite this paper, please use the following BibTex entry.
 
 ```
-@inproceedings{lawley-sigdial-2023a,
-  author = {Lawley, Grace O. and Heeman, Peter A. and Dolata, Jill K. and Fombonne, Eric and Bedrick, Steven},
-  title = {{A Statistical Approach for Quantifying Group Difference in Topic Distributions Using Clinical Discourse Samples}},
-  booktitle = {{Proceedings of the 24th Annual Meeting of the Special Interest Group on Discourse and Dialogue (SIGDIAL)}},
-  publisher = "Association for Computational Linguistics",
-  month = {09},
-  year = {2023},
-  location = {Prague, Czechia}
+@inproceedings{lawley-etal-2023-statistical,
+    title = {{A Statistical Approach for Quantifying Group Difference in Topic Distributions Using Clinical Discourse Samples}},
+    author = {{Lawley, Grace O. and Heeman, Peter A. and Dolata, Jill K. and Fombonne, Eric and Bedrick, Steven}},
+    booktitle = {{Proceedings of the 24th Meeting of the Special Interest Group on Discourse and Dialogue (SIGDIAL)}},
+    month = sep,
+    year = "2023",
+    address = "Prague, Czechia",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.sigdial-1.5",
+    pages = "55--65",
 }
 ```
